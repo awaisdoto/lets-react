@@ -1,14 +1,36 @@
-import { useState } from "react"; // this is a hook from react
-
+import { useState, useEffect } from "react"; // this is a hook from react
+import Results from "./Results";
+import useBreedList from "./useBreedList";
+const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
 const SearchParams = () => {
   const [location, setLocation] = useState(""); // this is a hook that basically returns an array from useState, with it's [0] element being the stateful value or in our case the location variable and the [1] second element being the funciton that updates the stateful value.
   const [animal, setAnimal] = useState("");
   const [breed, setBreed] = useState("");
-  const breeds = [];
-  const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
+  const [pets, setPets] = useState([]);
+  const [breeds] = useBreedList(animal);
+
+  useEffect(() => {
+    requestPets();
+  }, [animal]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function requestPets() {
+    const res = await fetch(
+      `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
+    );
+
+    const json = await res.json();
+
+    setPets(json.pets);
+  }
+
   return (
     <div className="search-params">
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          requestPets();
+        }}
+      >
         <label htmlFor="location">
           Location
           <input
@@ -23,7 +45,10 @@ const SearchParams = () => {
           <select
             id="animal"
             value={animal}
-            onChange={(e) => setAnimal(e.target.value)}
+            onChange={(e) => {
+              setAnimal(e.target.value);
+              setBreed("");
+            }}
           >
             <option />
             {ANIMALS.map((animal) => (
@@ -35,7 +60,7 @@ const SearchParams = () => {
           Breed
           <select
             id="breed"
-            disabled={breed.length === 0}
+            disabled={breeds.length === 0}
             value={breed}
             onChange={(e) => setBreed(e.target.value)}
           >
@@ -47,6 +72,8 @@ const SearchParams = () => {
         </label>
         <button>Submit</button>
       </form>
+
+      <Results pets={pets} />
     </div>
   );
 };

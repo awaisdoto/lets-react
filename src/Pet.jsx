@@ -5,6 +5,7 @@ const Pet = (props) => {
       <h2>{props.animal}</h2>
       <h2>{props.age}</h2>
       <h2>{props.origin}</h2>
+      <img src={props.image[0]} alt="yomama" style={{ width: "100%" }} />
     </div>
   );
 };
